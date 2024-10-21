@@ -51,7 +51,7 @@ commands:
             << parameters.extra_test_args >>
 
 jobs:
-  test-dev-cuda:
+  image-dev-cuda:
     docker:
       - image: cimg/python:3.11
     parameters:
@@ -61,6 +61,9 @@ jobs:
       os:
         type: string
         default: "ubuntu22.04"
+      push:
+        type: boolean
+        default: false
     steps:
       - setup_remote_docker:
           docker_layer_caching: false
@@ -73,16 +76,40 @@ jobs:
             --build-arg=BASE_IMAGE=nvidia/cuda:<< parameters.cuda_version >>-cudnn-devel-<< parameters.os >>
           extra_test_args: |
             --platform=linux/amd64
+      - when:
+          condition: << parameters.push >>
+          steps:
+            - run:
+                name: "Rename image"
+                command: |
+                  docker tag org/dev-cuda:cache-$CIRCLE_SHA1 $DOCKER_USER/dev-cuda:<< parameters.cuda_version >>-<< parameters.os >>
+            - docker/check:
+                docker-username: DOCKER_USER
+                docker-password: DOCKER_TOKEN
+            - docker/push:
+                image: $DOCKER_USER/dev-cuda
+                tag: << parameters.cuda_version >>-<< parameters.os >>
 
 workflows:
   test:
     jobs:
-      - test-dev-cuda:
+      - image-dev-cuda:
           matrix:
             parameters:
               os:
                 - ubuntu22.04
                 - ubuntu20.04
-    # - deploy:
-    #     requires:
-    #       - test-python
+  deploy:
+    jobs:
+      - hold:
+          type: approval
+      - image-dev-cuda:
+          context: "Docker Hub"
+          push: true
+          requires:
+            - hold
+          matrix:
+            parameters:
+              os:
+                - ubuntu22.04
+                - ubuntu20.04
