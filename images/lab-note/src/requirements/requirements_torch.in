@@ -1,0 +1,8 @@
+# Env
+-r ./requirements.in
+
+
+# framework
+lightning
+fastai
+mlflow

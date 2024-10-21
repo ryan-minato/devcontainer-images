@@ -89,6 +89,44 @@ jobs:
             - docker/push:
                 image: $DOCKER_USER/dev-cuda
                 tag: << parameters.cuda_version >>-<< parameters.os >>
+  image-lab-note:
+    docker:
+      - image: cimg/python:3.11
+    parameters:
+      cuda_version:
+        type: string
+        default: "12.4.1"
+      os:
+        type: string
+        default: "ubuntu22.04"
+      push:
+        type: boolean
+        default: false
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: false
+      - checkout
+      - build-and-test:
+          name-space: org
+          image-name: lab-note
+          extra_build_args: |
+            --platform=linux/amd64
+            --build-arg=BASE_IMAGE=nvidia/cuda:<< parameters.cuda_version >>-cudnn-devel-<< parameters.os >>
+          extra_test_args: |
+            --platform=linux/amd64
+      - when:
+          condition: << parameters.push >>
+          steps:
+            - run:
+                name: "Rename image"
+                command: |
+                  docker tag org/lab-note:cache-$CIRCLE_SHA1 $DOCKER_USER/lab-note:<< parameters.cuda_version >>-<< parameters.os >>
+            - docker/check:
+                docker-username: DOCKER_USER
+                docker-password: DOCKER_TOKEN
+            - docker/push:
+                image: $DOCKER_USER/lab-note
+                tag: << parameters.cuda_version >>-<< parameters.os >>
 
 workflows:
   test:
@@ -99,9 +137,19 @@ workflows:
               os:
                 - ubuntu22.04
                 - ubuntu20.04
+      - image-lab-note:
+          matrix:
+            parameters:
+              os:
+                - ubuntu22.04
+                - ubuntu20.04
   deploy:
     jobs:
       - hold:
+          filters:
+            branches:
+              only:
+                - main
           type: approval
       - image-dev-cuda:
           context: "Docker Hub"
@@ -113,3 +161,21 @@ workflows:
               os:
                 - ubuntu22.04
                 - ubuntu20.04
+              cuda_version:
+                - 12.6.2
+                - 12.5.1
+                - 12.4.1
+      - image-lab-note:
+          context: "Docker Hub"
+          push: true
+          requires:
+            - hold
+          matrix:
+            parameters:
+              os:
+                - ubuntu22.04
+                - ubuntu20.04
+              cuda_version:
+                - 12.6.2
+                - 12.5.1
+                - 12.4.1

@@ -1,0 +1,25 @@
+# Data Science
+scipy
+numba>=0.60.0
+numpy
+dask[complete]
+pandas
+scikit-learn
+h5py
+statsmodels
+polars
+# apache-beam  # TODO: Enable when linux wheels are available
+
+# Visualization
+matplotlib
+seaborn[stats]
+datashader
+plotnine[all]
+# plotly  # TODO: Enable when numpy dependency is fixed
+holoviews
+bokeh
+hvplot
+
+# Notebooks
+notebook
+jupyterlab

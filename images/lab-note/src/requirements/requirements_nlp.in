@@ -1,0 +1,53 @@
+# Env
+-r ./requirements_torch.in
+
+
+### NLP ###
+gensim
+# vllm
+openai
+stop-words
+nltk
+
+
+#### Huggingface ###
+peft
+trl
+tokenizers
+distilabel
+transformers
+diffusers
+datasets
+accelerate
+huggingface_hub
+safetensors
+sentence-transformers
+
+
+### agentic ###
+pyautogen
+# crewai  # TODO: Enable when numpy dependency is fixed
+phidata
+
+
+### langchain ###
+langchain
+langchain-openai
+# langchain-community  # TODO: Enable when numpy dependency is fixed
+# langchain-experimental  # TODO: Enable when numpy dependency is fixed
+langgraph
+langserve[all]
+langchain-cli
+langsmith
+
+
+### llama index ###
+llama-index
+
+
+### composio ###
+composio-core
+
+
+### guidance ###
+guidance

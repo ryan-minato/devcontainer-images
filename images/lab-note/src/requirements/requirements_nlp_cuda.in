@@ -1,0 +1,4 @@
+-r ./requirements_nlp.in
+
+flash-attn
+bitsandbytes
